@@ -24,7 +24,9 @@ environment variables, and the board.mk variable contract.
 | `FUNCTION` | — | Function to run (exclusive with `SCRIPT`; validated against the available list) |
 | `SCRIPT` | `scripts/default_script.c` | Path (may be outside the repo) to a C file defining `int fpga_script(void)` |
 | `OPTS` | — | Space-separated `NAME=value` config-macro overrides, e.g. `OPTS="CONFIG_VADJ_MV=1500"` |
-| `XSA` | `build/$(BOARD)/arch/system_wrapper.xsa` | Architecture file: read from here if it exists, generated here if not |
+| `BUILD_FOLDER` | `build` | Root folder for everything generated (per-board subfolders); created if missing |
+| `XSA` | `$(BUILD_FOLDER)/$(BOARD)/arch/system_wrapper.xsa` | Architecture file: read from here if it exists, generated here if not |
+| `ELF` | `$(BUILD_FOLDER)/$(BOARD)/sw/app.elf` | Firmware ELF: reused from here if up to date, built here if not |
 | `FORCE_ARCH` | — | `1` = regenerate the XSA even if present |
 | `FORCE_SW` | — | `1` = rebuild the firmware even if the ELF is up to date |
 | `FULL_RUN` | — | `1` = shorthand for `FORCE_ARCH=1 FORCE_SW=1` (rebuild both steps) |
@@ -32,7 +34,7 @@ environment variables, and the board.mk variable contract.
 | `SKIP_SW` | — | `1` = never run Vitis; reuse the existing ELF; error if missing |
 | `ARCH_FAST` | `0` | `1` = export a pre-synthesis XSA without bitstream (faster arch step) |
 | `PROGRAM_BIT` | `0` | `1` = extract the bitstream from the XSA and program it before running the ELF |
-| `OUTPUT` | `build/$(BOARD)/fpga_config_output.txt` | UART capture destination |
+| `OUTPUT` | `$(BUILD_FOLDER)/$(BOARD)/fpga_config_output.txt` | UART capture destination |
 | `TIMEOUT` | `120` | Seconds the capture waits for the firmware terminator line |
 | `RUN_WRAPPER` | (empty) | Command prefix wrapping the JTAG run (e.g. a board-lock client) |
 | `USE_NIX` | `1` | `1` = run host python steps inside `nix-shell`; `0` = run them directly |

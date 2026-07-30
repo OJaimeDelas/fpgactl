@@ -34,6 +34,8 @@ Each run has two build steps:
 
 Then the ELF is loaded over JTAG, and the UART output is captured to `build/<board>/fpga_config_output.txt` (override with `OUTPUT=`). The run exits with the firmware's `STATUS: OK|FAIL` result.
 
+Everything generated lives under `build/` by default. `BUILD_FOLDER=<path>` relocates all of it; `XSA=`/`ELF=`/`OUTPUT=` relocate individual artifacts. In all cases artifacts found at the given path are reused, missing ones are built there.
+
 Sticky per-user values (`XSA=`, `BOARD=`, `OUTPUT=`, tool paths…) can be placed in the `local.mk`, auto-included by the Makefile.
 
 Individual steps: `make arch`, `make sw`, `make run`. Inspection: `make board-list`, `make functions BOARD=<b>`, `make info BOARD=<b>`. Cleanup: `make clean`. The complete list of targets and variables is in `docs/CLI.md`; the available functions and their options are documented in `functions.md`.

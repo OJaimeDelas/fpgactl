@@ -10,11 +10,12 @@ $(error unknown BOARD '$(BOARD)'. Available: $(notdir $(patsubst %/board.mk,%,$(
 endif
 include boards/$(BOARD)/board.mk
 
-BOARD_DIR   := boards/$(BOARD)
-BUILD_DIR   := build/$(BOARD)
-XSA         ?= $(BUILD_DIR)/arch/system_wrapper.xsa
-ELF         := $(BUILD_DIR)/sw/app.elf
-OUTPUT      ?= $(BUILD_DIR)/fpga_config_output.txt
+BOARD_DIR    := boards/$(BOARD)
+BUILD_FOLDER ?= build
+BUILD_DIR    := $(BUILD_FOLDER)/$(BOARD)
+XSA          ?= $(BUILD_DIR)/arch/system_wrapper.xsa
+ELF          ?= $(BUILD_DIR)/sw/app.elf
+OUTPUT       ?= $(BUILD_DIR)/fpga_config_output.txt
 STAGE       := $(BUILD_DIR)/sw/src
 STAGE_STAMP := $(BUILD_DIR)/sw/.stage.stamp
 RUN_BUNDLE  := $(BUILD_DIR)/run_bundle
@@ -269,7 +270,7 @@ info:
 
 clean:
 ifeq ($(CLEAN_ALL),1)
-	rm -rf build
+	rm -rf $(BUILD_FOLDER)
 else
 	rm -rf $(BUILD_DIR)
 endif
