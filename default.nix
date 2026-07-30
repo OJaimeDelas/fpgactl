@@ -11,9 +11,9 @@ pkgs.mkShell {
     gnugrep
   ];
   # Vivado/Vitis/xsct are deliberately NOT provided by nix.
-  # They come from the system install; point XILINX_VIVADO/XILINX_VITIS at the
-  # 2024.1 install roots (see local.mk / README).
+  # They come from the system install; point VIVADOPATH/VITISPATH at the
+  # installs (see local.mk / README).
   shellHook = ''
-    echo "FPGA-Configurator shell (Vivado/Vitis expected from the system install)"
+    echo "fpgactl shell (Vivado/Vitis expected from the system install)"
   '';
 }

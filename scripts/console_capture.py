@@ -24,6 +24,7 @@ import subprocess
 import sys
 import termios
 import time
+from datetime import datetime
 
 TERMINATOR = "Application finished"
 
@@ -100,6 +101,11 @@ def main():
     os.makedirs(outdir, exist_ok=True)
 
     with open(args.output, "wb") as out:
+        header = "=== fpgactl run %s ===\n" % \
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        out.write(header.encode())
+        out.flush()
+
         while time.time() < deadline:
             ready, _, _ = select.select([fd], [], [], 0.2)
             if ready:

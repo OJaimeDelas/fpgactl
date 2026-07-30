@@ -151,7 +151,7 @@ void print_word_value(value_fmt_t fmt, u16 raw, int vout_exp, const char *unit)
     int milli;
 
     if (fmt == FMT_RAW16) {
-        fpga_printf("0x%04x", raw);
+        fpga_printf("0x%04x  %u", raw, raw);
         return;
     }
 
@@ -169,5 +169,5 @@ void print_word_value(value_fmt_t fmt, u16 raw, int vout_exp, const char *unit)
         return;
     }
 
-    fpga_printf("0x%04x", raw);
+    fpga_printf("0x%04x  %u", raw, raw);
 }

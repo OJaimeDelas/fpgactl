@@ -1,8 +1,8 @@
-# FPGA-Configurator JTAG run script for ZynqMP (run with xsct).
+# fpgactl JTAG run script for ZynqMP (run with xsct).
 #
 # Replaces the FSBL in the JTAG flow: system reset, psu_init (clocks, MIO,
 # DDR), then download and start the ELF on A53 core 0. Programs a bitstream
-# first only if one is given (the ZCU104 configurator PL is empty, so none
+# first only if one is given (the ZCU104 design has an empty PL, so none
 # is needed).
 #
 # argv: <elf> <psu_init_tcl> <hw_server_url> [cable_filter] [bitstream]
@@ -20,6 +20,11 @@ set bit     [lindex $argv 4]
 
 if {![file exists $elf]} { puts "ERROR: ELF not found: $elf"; exit 1 }
 if {![file exists $psu]} { puts "ERROR: psu_init.tcl not found: $psu"; exit 1 }
+
+# xsct requires the transport prefix in the URL (tcp:host:port)
+if {[string first "tcp:" $url] != 0} {
+    set url "tcp:$url"
+}
 
 puts "Connecting to hw_server at $url"
 if {[catch {connect -url $url} err]} {

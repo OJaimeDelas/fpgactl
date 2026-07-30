@@ -1,8 +1,7 @@
 # CLI reference
 
-Complete list of user-facing interfaces. **Any change that adds, removes, or
-renames a make target, make variable, environment variable, or board.mk
-variable MUST be reflected here in the same change.**
+Complete list of user-facing interfaces: make targets, make variables,
+environment variables, and the board.mk variable contract.
 
 ## Make targets
 
@@ -27,6 +26,8 @@ variable MUST be reflected here in the same change.**
 | `OPTS` | — | Space-separated `NAME=value` config-macro overrides, e.g. `OPTS="CONFIG_VADJ_MV=1500"` |
 | `XSA` | `build/$(BOARD)/arch/system_wrapper.xsa` | Architecture file: read from here if it exists, generated here if not |
 | `FORCE_ARCH` | — | `1` = regenerate the XSA even if present |
+| `FORCE_SW` | — | `1` = rebuild the firmware even if the ELF is up to date |
+| `FULL_RUN` | — | `1` = shorthand for `FORCE_ARCH=1 FORCE_SW=1` (rebuild both steps) |
 | `SKIP_ARCH` | — | `1` = never run Vivado; error if `$(XSA)` is missing |
 | `SKIP_SW` | — | `1` = never run Vitis; reuse the existing ELF; error if missing |
 | `ARCH_FAST` | `0` | `1` = export a pre-synthesis XSA without bitstream (faster arch step) |
@@ -37,7 +38,7 @@ variable MUST be reflected here in the same change.**
 | `USE_NIX` | `1` | `1` = run host python steps inside `nix-shell`; `0` = run them directly |
 | `CLEAN_ALL` | — | `1` = `make clean` removes all boards' build dirs |
 
-Sticky per-user values: put them in the gitignored `local.mk` (auto-included)
+Sticky per-user values: put them in the `local.mk` (auto-included)
 or export them in the shell.
 
 ## Environment variables
@@ -45,8 +46,11 @@ or export them in the shell.
 | Variable | Meaning |
 |---|---|
 | `<PREFIX>_SERVER`, `<PREFIX>_USER` | Remote board host/login; the prefix is set per board in its `board.mk` (zcu104: `ZCU104_SERVER`/`ZCU104_USER`). Unset = board is local |
-| `BOARD_SSH_FLAGS`, `BOARD_SYNC_FLAGS` | Extra flags for `ssh`/`scp` / `rsync` in the remote branch |
-| `XILINX_VIVADO`, `XILINX_VITIS` | Vivado/Vitis 2024.1 install roots (`<root>/bin/{vivado,vitis,xsct}`); unset = use PATH |
+| `VIVADOPATH`, `VITISPATH` | Vivado/Vitis install paths; may name a version (`.../Vivado/2024.1`) or the versionless root (`.../Vivado/`, highest installed version is used); unset = use PATH |
+| `VIVADO_SERVER`, `VIVADO_USER` | Run the arch step (Vivado) on this remote host; unset = local. `vivado` must be on the remote PATH |
+| `VITIS_SERVER`, `VITIS_USER` | Run the sw step (Vitis) on this remote host; unset = local. `vitis` must be on the remote PATH |
+| `BOARD_SSH_FLAGS`, `BOARD_SYNC_FLAGS` | Extra flags for `ssh`/`scp` / `rsync` in the remote board branch |
+| `VIVADO_SSH_FLAGS`, `VIVADO_SYNC_FLAGS`, `VITIS_SSH_FLAGS`, `VITIS_SYNC_FLAGS` | Extra flags for `ssh`/`scp` / `rsync` in the remote tool branches |
 
 ## board.mk variables (board-author contract; definitions only, no rules)
 

@@ -1,4 +1,4 @@
-# FPGA-Configurator architecture generation for the ZCU104 (batch mode).
+# fpgactl architecture generation for the ZCU104 (batch mode).
 #
 # Builds the PS-only design (single zynq_ultra_ps_e, empty PL) and exports
 # the XSA hardware platform.

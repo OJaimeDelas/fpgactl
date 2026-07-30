@@ -167,7 +167,7 @@ static void dump_one_page(const pmic_desc_t *d, const pmic_page_t *page)
         fpga_printf("%-20s %-35s : ", byte_reads[i].name, byte_reads[i].caption);
 
         if (status == FPGA_OK) {
-            fpga_printf("0x%02x\r\n", b);
+            fpga_printf("0x%02x  %u\r\n", b, b);
         } else {
             fpga_printf("READ FAILED\r\n");
         }

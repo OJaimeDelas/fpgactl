@@ -9,7 +9,7 @@ int main(void)
     fpga_console_init();
 
     fpga_printf("\r\n\r\n");
-    fpga_printf("FPGA-Configurator | board: %s | entry: %s\r\n",
+    fpga_printf("fpgactl | board: %s | entry: %s\r\n",
                 board_name(), FPGA_ENTRY_NAME);
 
     status = board_init();

@@ -1,11 +1,20 @@
-# FPGA-Configurator
+# fpgactl
 
 Configure FPGA boards from the command line: read PMIC telemetry, set up and enable VADJ, and run user-defined configuration routines. Bare-metal firmware is built per board from a common function library; results are captured from the board's UART into `fpga_config_output.txt`.
 
 ## Requirements
 
 - Nix (host tools are provided through `default.nix`; the Makefile wraps them automatically).
-- Vivado and Vitis 2024.1 on the system (not through nix). Point `XILINX_VIVADO`/`XILINX_VITIS` at the install roots in `local.mk` (gitignored, see the template in this repo) or export them.
+- Vivado and Vitis on the system (not through nix). Point `VIVADOPATH`/`VITISPATH` at the installs — either a specific version or the versionless root (the highest installed version is picked automatically):
+
+  ```make
+  VIVADOPATH = /opt/Xilinx/Vivado/ 
+  VITISPATH  = /opt/Xilinx/Vitis/
+  ```
+
+  These (and every other user-site variable) can live in a `local.mk` at the repo root (auto-included), in your bashrc, or be exported in the shell.
+
+To run a tool step on another machine instead, set `VIVADO_SERVER`/`VIVADO_USER` (arch step) and/or `VITIS_SERVER`/`VITIS_USER` (sw step): the inputs are rsync'd over, the tool runs there (`vivado`/`vitis` must be on the remote PATH), and the resulting XSA/ELF is copied back. Unset them to run locally.
 
 ## Usage
 
@@ -19,13 +28,15 @@ make run BOARD=zcu104 FUNCTION=config_vadj OPTS="CONFIG_VADJ_MV=1500"  # overrid
 Each run has two build steps:
 
 1. **arch** — Vivado builds the board architecture and exports the XSA. `XSA=<path>` names the file for both reading and writing (default `build/<board>/arch/system_wrapper.xsa`): if it exists the step is skipped, if not it is generated there. `FORCE_ARCH=1` regenerates; `SKIP_ARCH=1` forbids Vivado (errors if the XSA is missing).
-2. **sw** — Vitis compiles the firmware (common code + board code + selected function/script) against the XSA. `SKIP_SW=1` reuses the existing ELF.
+2. **sw** — Vitis compiles the firmware (common code + board code + selected function/script) against the XSA. `SKIP_SW=1` reuses the existing ELF; `FORCE_SW=1` rebuilds it unconditionally.
+
+`FULL_RUN=1` forces both steps (equivalent to `FORCE_ARCH=1 FORCE_SW=1`).
 
 Then the ELF is loaded over JTAG, and the UART output is captured to `build/<board>/fpga_config_output.txt` (override with `OUTPUT=`). The run exits with the firmware's `STATUS: OK|FAIL` result.
 
-Sticky per-user values (`XSA=`, `BOARD=`, `OUTPUT=`, tool paths…) can be placed in the gitignored `local.mk`, auto-included by the Makefile.
+Sticky per-user values (`XSA=`, `BOARD=`, `OUTPUT=`, tool paths…) can be placed in the `local.mk`, auto-included by the Makefile.
 
-Individual steps: `make arch`, `make sw`, `make run`. Inspection: `make board-list`, `make functions BOARD=<b>`, `make info BOARD=<b>`. Cleanup: `make clean`. The complete list of targets and variables is in `docs/CLI.md` — that file is authoritative and updated with every CLI change.
+Individual steps: `make arch`, `make sw`, `make run`. Inspection: `make board-list`, `make functions BOARD=<b>`, `make info BOARD=<b>`. Cleanup: `make clean`. The complete list of targets and variables is in `docs/CLI.md`; the available functions and their options are documented in `functions.md`.
 
 ### Remote boards
 
@@ -62,7 +73,7 @@ int fpga_script(void) {
 
 ```make
 vadj-setup:
-	$(MAKE) -C path/to/FPGA-Configurator run BOARD=zcu104 \
+	$(MAKE) -C path/to/fpgactl run BOARD=zcu104 \
 	        SCRIPT=$(abspath vadj_1v8.c) OUTPUT=$(abspath build/vadj.log)
 ```
 
