@@ -14,7 +14,7 @@ Configure FPGA boards from the command line: read PMIC telemetry, set up and ena
 
   These (and every other user-site variable) can live in a `local.mk` at the repo root (auto-included), in your bashrc, or be exported in the shell.
 
-To run a tool step on another machine instead, set `VIVADO_SERVER`/`VIVADO_USER` (arch step) and/or `VITIS_SERVER`/`VITIS_USER` (sw step): the inputs are rsync'd over, the tool runs there (`vivado`/`vitis` must be on the remote PATH), and the resulting XSA/ELF is copied back. Unset them to run locally.
+To run a tool step on another machine instead, set `VIVADO_SERVER`/`VIVADO_USER` (arch step) and/or `VITIS_SERVER`/`VITIS_USER` (sw step): the inputs are rsync'd over, the tool runs there (`VIVADOPATH`/`VITISPATH` are resolved on the remote host, or its PATH if unset), and the resulting XSA/ELF is copied back. Unset them to run locally.
 
 ## Usage
 

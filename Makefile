@@ -38,25 +38,26 @@ REMOTE_DIR  := fpgactl/$(BOARD)
 # otherwise <path>/<highest version>/bin/<binary>
 resolve_tool = $(if $(wildcard $(1)/bin/$(2)),$(1)/bin/$(2),$(lastword $(shell ls -d $(1)/*/bin/$(2) 2>/dev/null | sort -V)))
 
+# Lazily resolved: a path that only exists on a remote host must not fail
+# locally, so the error fires only when the local tool is actually invoked.
 ifneq ($(VIVADOPATH),)
-VIVADO := $(call resolve_tool,$(VIVADOPATH),vivado)
-ifeq ($(VIVADO),)
-$(error no Vivado install found under VIVADOPATH='$(VIVADOPATH)')
-endif
+VIVADO = $(or $(call resolve_tool,$(VIVADOPATH),vivado),$(error no Vivado install found under VIVADOPATH='$(VIVADOPATH)'))
 else
-VIVADO := vivado
+VIVADO = vivado
 endif
 
 ifneq ($(VITISPATH),)
-VITIS := $(call resolve_tool,$(VITISPATH),vitis)
-ifeq ($(VITIS),)
-$(error no Vitis install found under VITISPATH='$(VITISPATH)')
-endif
-XSCT := $(dir $(VITIS))xsct
+VITIS = $(or $(call resolve_tool,$(VITISPATH),vitis),$(error no Vitis install found under VITISPATH='$(VITISPATH)'))
+XSCT  = $(dir $(VITIS))xsct
 else
-VITIS := vitis
-XSCT  := xsct
+VITIS = vitis
+XSCT  = xsct
 endif
+
+# The same VIVADOPATH/VITISPATH are resolved on the remote host (falling
+# back to the remote PATH when unset).
+REMOTE_VIVADO_CMD = $(if $(VIVADOPATH),$$([ -x $(VIVADOPATH)/bin/vivado ] && echo $(VIVADOPATH)/bin/vivado || ls -d $(VIVADOPATH)/*/bin/vivado 2>/dev/null | sort -V | tail -1),vivado)
+REMOTE_VITIS_CMD  = $(if $(VITISPATH),$$([ -x $(VITISPATH)/bin/vitis ] && echo $(VITISPATH)/bin/vitis || ls -d $(VITISPATH)/*/bin/vitis 2>/dev/null | sort -V | tail -1),vitis)
 
 REMOTE_ARCH_DIR := fpgactl/$(BOARD)/arch
 REMOTE_SW_DIR   := fpgactl/$(BOARD)/sw
@@ -137,7 +138,7 @@ else
 	@mkdir -p $(dir $@)
 	ssh $(VIVADO_SSH_FLAGS) $(VIVADO_USER)@$(VIVADO_SERVER) "mkdir -p $(REMOTE_ARCH_DIR)/src"
 	rsync $(VIVADO_SYNC_FLAGS) -az --delete $(BOARD_DIR)/vivado/ $(VIVADO_USER)@$(VIVADO_SERVER):$(REMOTE_ARCH_DIR)/src/
-	ssh -t $(VIVADO_SSH_FLAGS) $(VIVADO_USER)@$(VIVADO_SERVER) 'cd $(REMOTE_ARCH_DIR) && vivado -nojournal -log vivado_arch.log -mode batch -source src/gen_arch.tcl -tclargs $$PWD/system_wrapper.xsa $(BOARD_PART) $(ARCH_FAST) $$PWD/src/ps_config.tcl'
+	ssh -t $(VIVADO_SSH_FLAGS) $(VIVADO_USER)@$(VIVADO_SERVER) 'cd $(REMOTE_ARCH_DIR) && $(REMOTE_VIVADO_CMD) -nojournal -log vivado_arch.log -mode batch -source src/gen_arch.tcl -tclargs $$PWD/system_wrapper.xsa $(BOARD_PART) $(ARCH_FAST) $$PWD/src/ps_config.tcl'
 	scp -q $(VIVADO_SSH_FLAGS) $(VIVADO_USER)@$(VIVADO_SERVER):$(REMOTE_ARCH_DIR)/system_wrapper.xsa $@
 endif
 	@test -f "$@"
@@ -183,7 +184,7 @@ else
 	rsync $(VITIS_SYNC_FLAGS) -az --delete $(STAGE)/ $(VITIS_USER)@$(VITIS_SERVER):$(REMOTE_SW_DIR)/src/
 	rsync $(VITIS_SYNC_FLAGS) -az $(XSA) $(VITIS_USER)@$(VITIS_SERVER):$(REMOTE_SW_DIR)/system_wrapper.xsa
 	rsync $(VITIS_SYNC_FLAGS) -az $(BOARD_DIR)/vitis/build_sw.py $(VITIS_USER)@$(VITIS_SERVER):$(REMOTE_SW_DIR)/
-	ssh -t $(VITIS_SSH_FLAGS) $(VITIS_USER)@$(VITIS_SERVER) 'cd $(REMOTE_SW_DIR) && FC_WORKSPACE=$$PWD/ws FC_XSA=$$PWD/system_wrapper.xsa FC_SRC=$$PWD/src FC_ELF_OUT=$$PWD/app.elf FC_PROC=$(BOARD_PROC) FC_STDIO=$(BOARD_UART_STDIO) vitis -s build_sw.py'
+	ssh -t $(VITIS_SSH_FLAGS) $(VITIS_USER)@$(VITIS_SERVER) 'cd $(REMOTE_SW_DIR) && FC_WORKSPACE=$$PWD/ws FC_XSA=$$PWD/system_wrapper.xsa FC_SRC=$$PWD/src FC_ELF_OUT=$$PWD/app.elf FC_PROC=$(BOARD_PROC) FC_STDIO=$(BOARD_UART_STDIO) $(REMOTE_VITIS_CMD) -s build_sw.py'
 	@mkdir -p $(dir $@)
 	scp -q $(VITIS_SSH_FLAGS) $(VITIS_USER)@$(VITIS_SERVER):$(REMOTE_SW_DIR)/app.elf $@
 endif

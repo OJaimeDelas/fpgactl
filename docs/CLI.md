@@ -41,16 +41,16 @@ environment variables, and the board.mk variable contract.
 | `CLEAN_ALL` | — | `1` = `make clean` removes all boards' build dirs |
 
 Sticky per-user values: put them in the `local.mk` (auto-included)
-or export them in the shell.
+or export them in the shell. Precedence: command line > `local.mk` > environment.
 
 ## Environment variables
 
 | Variable | Meaning |
 |---|---|
 | `<PREFIX>_SERVER`, `<PREFIX>_USER` | Remote board host/login; the prefix is set per board in its `board.mk` (zcu104: `ZCU104_SERVER`/`ZCU104_USER`). Unset = board is local |
-| `VIVADOPATH`, `VITISPATH` | Vivado/Vitis install paths; may name a version (`.../Vivado/2024.1`) or the versionless root (`.../Vivado/`, highest installed version is used); unset = use PATH |
-| `VIVADO_SERVER`, `VIVADO_USER` | Run the arch step (Vivado) on this remote host; unset = local. `vivado` must be on the remote PATH |
-| `VITIS_SERVER`, `VITIS_USER` | Run the sw step (Vitis) on this remote host; unset = local. `vitis` must be on the remote PATH |
+| `VIVADOPATH`, `VITISPATH` | Vivado/Vitis install paths on whichever machine runs the tool; may name a version (`.../Vivado/2024.1`) or the versionless root (`.../Vivado/`, highest installed version is used); unset = use PATH |
+| `VIVADO_SERVER`, `VIVADO_USER` | Run the arch step (Vivado) on this remote host; unset = local |
+| `VITIS_SERVER`, `VITIS_USER` | Run the sw step (Vitis) on this remote host; unset = local |
 | `BOARD_SSH_FLAGS`, `BOARD_SYNC_FLAGS` | Extra flags for `ssh`/`scp` / `rsync` in the remote board branch |
 | `VIVADO_SSH_FLAGS`, `VIVADO_SYNC_FLAGS`, `VITIS_SSH_FLAGS`, `VITIS_SYNC_FLAGS` | Extra flags for `ssh`/`scp` / `rsync` in the remote tool branches |
 
