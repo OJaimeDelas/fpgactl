@@ -58,6 +58,8 @@ endif
 # back to the remote PATH when unset).
 REMOTE_VIVADO_CMD = $(if $(VIVADOPATH),$$([ -x $(VIVADOPATH)/bin/vivado ] && echo $(VIVADOPATH)/bin/vivado || ls -d $(VIVADOPATH)/*/bin/vivado 2>/dev/null | sort -V | tail -1),vivado)
 REMOTE_VITIS_CMD  = $(if $(VITISPATH),$$([ -x $(VITISPATH)/bin/vitis ] && echo $(VITISPATH)/bin/vitis || ls -d $(VITISPATH)/*/bin/vitis 2>/dev/null | sort -V | tail -1),vitis)
+# xsct for the board host (the run ssh string is double-quoted, hence the \$)
+REMOTE_XSCT_CMD   = $(if $(VITISPATH),\$$([ -x $(VITISPATH)/bin/xsct ] && echo $(VITISPATH)/bin/xsct || ls -d $(VITISPATH)/*/bin/xsct 2>/dev/null | sort -V | tail -1),xsct)
 
 REMOTE_ARCH_DIR := fpgactl/$(BOARD)/arch
 REMOTE_SW_DIR   := fpgactl/$(BOARD)/sw
@@ -213,7 +215,7 @@ endif
 
 BIT_ARG := $(if $(filter 1,$(PROGRAM_BIT)),system.bit,)
 RUN_CMD  = $(RUN_WRAPPER) $(XSCT) run_jtag.tcl app.elf psu_init.tcl $(BOARD_HW_SERVER) '$(BOARD_JTAG_CABLE_FILTER)' $(BIT_ARG)
-REMOTE_RUN_CMD = $(RUN_WRAPPER) xsct run_jtag.tcl app.elf psu_init.tcl $(BOARD_HW_SERVER) '$(BOARD_JTAG_CABLE_FILTER)' $(BIT_ARG)
+REMOTE_RUN_CMD = $(RUN_WRAPPER) $(REMOTE_XSCT_CMD) run_jtag.tcl app.elf psu_init.tcl $(BOARD_HW_SERVER) '$(BOARD_JTAG_CABLE_FILTER)' $(BIT_ARG)
 
 run-banner:
 	@$(STEP) "run: BOARD=$(BOARD)  entry=$(ENTRY_NAME)  target=$(if $(BOARD_SERVER),$(BOARD_USER)@$(BOARD_SERVER),local)"

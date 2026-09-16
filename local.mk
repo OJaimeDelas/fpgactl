@@ -6,10 +6,10 @@ VIVADOPATH = /home/tools/Xilinx/Vivado/
 VITISPATH  = /home/tools/Xilinx/Vitis/
 
 # Remote tool hosts (leave commented to run locally)
-#VIVADO_SERVER = myhost
-#VIVADO_USER   = myuser
-#VITIS_SERVER  = myhost
-#VITIS_USER    = myuser
+VIVADO_SERVER = brutus.inesc-id.pt
+VIVADO_USER   = jaguiar
+VITIS_SERVER  = brutus.inesc-id.pt
+VITIS_USER    = jaguiar
 
 # Remote board host (leave commented if the board is attached locally)
 #ZCU104_SERVER = myhost
