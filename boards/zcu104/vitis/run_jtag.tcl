@@ -26,10 +26,23 @@ if {[string first "tcp:" $url] != 0} {
     set url "tcp:$url"
 }
 
+# Use a running hw_server if there is one. Otherwise, when the URL is the
+# default local one, start it: this script always runs on the machine the
+# board is attached to (locally, or on BOARD_SERVER over ssh), and a bare
+# 'connect' launches a local hw_server on port 3121 if none is running.
 puts "Connecting to hw_server at $url"
 if {[catch {connect -url $url} err]} {
-    puts "ERROR: could not connect to hw_server: $err"
-    exit 1
+    set is_local [regexp {^tcp:(localhost|127\.0\.0\.1)?(:3121)?$} $url]
+    if {!$is_local} {
+        puts "ERROR: could not connect to hw_server at $url: $err"
+        puts "       (remote hw_server is not auto-started; start it on that host)"
+        exit 1
+    }
+    puts "No hw_server running; starting one locally"
+    if {[catch {connect} err2]} {
+        puts "ERROR: could not start/connect to a local hw_server: $err2"
+        exit 1
+    }
 }
 
 # Select the JTAG cable if a filter was given (multi-cable hosts)

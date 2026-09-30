@@ -48,7 +48,7 @@ If the board is attached to another machine, export before running:
 export ZCU104_SERVER=<host> ZCU104_USER=<user>    # env prefix defined per board in board.mk
 ```
 
-The run bundle (ELF + JTAG script + capture script) is rsync'd to the host, executed there, and `fpga_config_output.txt` is copied back. The remote host needs only `xsct` on PATH, python3, the JTAG cable and the serial port.
+The run bundle (ELF + JTAG script + capture script) is rsync'd to the host, executed there, and `fpga_config_output.txt` is copied back. The remote host needs only `xsct` on PATH, python3, the JTAG cable and the serial port. If no `hw_server` is running on the board host, `run_jtag.tcl` starts one (only for the default local URL `localhost:3121`; a `BOARD_HW_SERVER` on another host must already be running).
 
 Vivado and/or Vitis can also run on remote machines: set `VIVADO_SERVER`/`VIVADO_USER` and/or `VITIS_SERVER`/`VITIS_USER` (in `local.mk`, bashrc, or exported).
 
