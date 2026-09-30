@@ -5,6 +5,23 @@ BOARD ?= zcu104
 
 -include local.mk
 
+USE_NIX ?= 1
+
+# ---------------------------------------------------------------------------
+# Nix: with USE_NIX=1 every target runs inside `nix-shell default.nix`, so
+# the host needs only make + nix (python3, rsync, ssh, unzip... are fetched
+# on the first run). The shell hook sets FPGACTL_NIX=1, which stops the
+# re-exec; command-line variables reach the inner make through MAKEFLAGS.
+# ---------------------------------------------------------------------------
+ifeq ($(USE_NIX)$(FPGACTL_NIX),1)
+NIX_GOALS := $(or $(MAKECMDGOALS),all)
+.PHONY: $(NIX_GOALS)
+$(firstword $(NIX_GOALS)):
+	@nix-shell $(CURDIR)/default.nix --run '$(MAKE) --no-print-directory $(MAKECMDGOALS)'
+$(wordlist 2,$(words $(NIX_GOALS)),$(NIX_GOALS)):
+	@:
+else
+
 ifeq ($(wildcard boards/$(BOARD)/board.mk),)
 $(error unknown BOARD '$(BOARD)'. Available: $(notdir $(patsubst %/board.mk,%,$(wildcard boards/*/board.mk))))
 endif
@@ -20,7 +37,6 @@ STAGE       := $(BUILD_DIR)/sw/src
 STAGE_STAMP := $(BUILD_DIR)/sw/.stage.stamp
 RUN_BUNDLE  := $(BUILD_DIR)/run_bundle
 TIMEOUT     ?= 120
-USE_NIX     ?= 1
 ARCH_FAST   ?= 0
 PROGRAM_BIT ?= 0
 RUN_WRAPPER ?=
@@ -63,14 +79,6 @@ REMOTE_XSCT_CMD   = $(if $(VITISPATH),\$$([ -x $(VITISPATH)/bin/xsct ] && echo $
 
 REMOTE_ARCH_DIR := fpgactl/$(BOARD)/arch
 REMOTE_SW_DIR   := fpgactl/$(BOARD)/sw
-
-# Host-side python steps run inside nix-shell unless USE_NIX=0.
-# The shell file is referenced by absolute path because recipes may cd first.
-ifeq ($(USE_NIX),1)
-NIXRUN = nix-shell $(abspath default.nix) --run
-else
-NIXRUN = sh -c
-endif
 
 # Minimal colored step output (colored text, cyan = step/phase)
 STEP = printf '\033[1;36m%s\033[0m\n'
@@ -226,7 +234,7 @@ run: run-banner $(RUN_BUNDLE)/.stamp
 ifeq ($(BOARD_SERVER),)
 	@$(STEP) "run: programming over JTAG and capturing UART -> $(OUTPUT)"
 	@mkdir -p $(dir $(OUTPUT))
-	cd $(RUN_BUNDLE) && $(NIXRUN) "python3 console_capture.py -s $(BOARD_SERIAL_PORT) -b $(BOARD_BAUD) -o $(abspath $(OUTPUT)) -t $(TIMEOUT) -- $(RUN_CMD)"
+	cd $(RUN_BUNDLE) && python3 console_capture.py -s $(BOARD_SERIAL_PORT) -b $(BOARD_BAUD) -o $(abspath $(OUTPUT)) -t $(TIMEOUT) -- $(RUN_CMD)
 	@$(OK) "run: finished - output captured to $(OUTPUT)"
 else
 	@$(STEP) "run: syncing run bundle to $(BOARD_USER)@$(BOARD_SERVER)"
@@ -279,3 +287,5 @@ else
 endif
 
 FORCE:
+
+endif # USE_NIX re-exec

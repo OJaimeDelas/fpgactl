@@ -37,7 +37,7 @@ environment variables, and the board.mk variable contract.
 | `OUTPUT` | `$(BUILD_FOLDER)/$(BOARD)/fpga_config_output.txt` | UART capture destination |
 | `TIMEOUT` | `120` | Seconds the capture waits for the firmware terminator line |
 | `RUN_WRAPPER` | (empty) | Command prefix wrapping the JTAG run (e.g. a board-lock client) |
-| `USE_NIX` | `1` | `1` = run host python steps inside `nix-shell`; `0` = run them directly |
+| `USE_NIX` | `1` | `1` = run every target inside `nix-shell default.nix` (host needs only make + nix); `0` = use the system's python3/rsync/ssh/unzip |
 | `CLEAN_ALL` | — | `1` = `make clean` removes all boards' build dirs |
 
 Sticky per-user values: put them in the `local.mk` (auto-included)

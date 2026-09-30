@@ -4,7 +4,7 @@ Configure FPGA boards from the command line: read PMIC telemetry, set up and ena
 
 ## Requirements
 
-- Nix (host tools are provided through `default.nix`; the Makefile wraps them automatically).
+- `make` and Nix. Every `make` target re-runs itself inside `nix-shell default.nix`, which provides python3, rsync, ssh and unzip (downloaded on the first run). To use system packages instead, install `make python3 rsync unzip openssh-client` and set `USE_NIX=0` (in `local.mk` or on the command line).
 - Vivado and Vitis on the system (not through nix). Point `VIVADOPATH`/`VITISPATH` at the installs — either a specific version or the versionless root (the highest installed version is picked automatically):
 
   ```make
